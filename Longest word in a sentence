@@ -1,0 +1,24 @@
+%{
+#include <stdio.h>
+#include <string.h>
+int max_word_length = 0;
+%}
+%%
+[A-Za-z]+ {
+int len = strlen(yytext);
+if (len > max_word_length) {
+max_word_length = len;
+}
+}
+[ \t\n]+ { /* ignore whitespace */ }
+. { /* ignore other characters */ }
+%%
+int yywrap() {
+return 1;
+}
+int main() {
+printf("Enter the sentence:");
+yylex();
+printf("Length of the longest word: %d\n", max_word_length);
+return 0;
+}
