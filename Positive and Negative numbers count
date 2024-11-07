@@ -1,0 +1,18 @@
+%{
+int pos=0,neg=0;
+%}
+
+%option noyywrap
+
+%%
+[+] {pos++;}
+[-] {neg++;}
+[ \t\n] { }
+. { }
+%%
+int main() {
+printf("Enter the input: ");
+yylex();
+printf("Positive numbers are: %d\n",pos);
+printf("Negative numbers are: %d\n",neg);
+}
