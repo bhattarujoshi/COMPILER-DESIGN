@@ -1,0 +1,17 @@
+%{
+int vc=0;
+int cc=0;
+%}
+%option noyywrap
+%%
+[aeiouAEIOU] {vc++;}
+[b-df-hj-np-tv-zB-DF-HJ-NP-TV-Z] {cc++;}
+[ \t\n] { }
+. { }
+%%
+int main(){
+printf("Enter the input: ");
+yylex();
+printf("\nVowel count is: %d\n",vc);
+printf("Consonant count is: %d\n",cc);
+}
