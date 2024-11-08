@@ -1,0 +1,11 @@
+%{
+%}
+%%
+[0-9]+ {printf("Given input is a digit");}
+.+ {printf("Given input is not a digit");}
+%%
+int yywrap(){}
+int main(){
+printf("\n Enter the number:");
+yylex();
+}
