@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_IDENTIFIER_LENGTH 32  // Reasonable limit for identifier length
+
+// Check if a character is a valid identifier character
+int isIdentifierChar(char ch) {
+    return isalnum(ch) || ch == '_';
+}
+
+// Check if a character is an operator
+int isOperator(char ch) {
+    return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '=' ||
+           ch == '<' || ch == '>' || ch == '!' || ch == '%';
+}
+
+// Skip over whitespaces and comments
+void skipWhitespaceAndComments(FILE *file) {
+    int ch;
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == ' ' || ch == '\t' || ch == '\n') {
+            continue;
+        } else if (ch == '/') {
+            int nextCh = fgetc(file);
+            if (nextCh == '/') {  // Line comment
+                while ((ch = fgetc(file)) != '\n' && ch != EOF);
+            } else if (nextCh == '*') {  // Block comment
+                while ((ch = fgetc(file)) != EOF) {
+                    if (ch == '*' && (nextCh = fgetc(file)) == '/') break;
+                }
+            } else {
+                ungetc(nextCh, file);  // Not a comment, possibly division operator
+                ungetc(ch, file);
+                break;
+            }
+        } else {
+            ungetc(ch, file);
+            break;
+        }
+    }
+}
+
+// Process an identifier or keyword
+void processIdentifier(FILE *file) {
+    char identifier[MAX_IDENTIFIER_LENGTH + 1];
+    int length = 0;
+    int ch;
+    
+    while ((ch = fgetc(file)) != EOF && isIdentifierChar(ch)) {
+        if (length < MAX_IDENTIFIER_LENGTH) {
+            identifier[length++] = ch;
+        }
+    }
+    identifier[length] = '\0';
+    ungetc(ch, file);
+
+    printf("Identifier: %s\n", identifier);
+}
+
+// Process a number (constant)
+void processNumber(FILE *file) {
+    char number[64];
+    int length = 0;
+    int ch;
+
+    while ((ch = fgetc(file)) != EOF && isdigit(ch)) {
+        number[length++] = ch;
+    }
+    number[length] = '\0';
+    ungetc(ch, file);
+
+    printf("Constant: %s\n", number);
+}
+
+// Process an operator
+void processOperator(FILE *file) {
+    int ch = fgetc(file);
+    if (isOperator(ch)) {
+        printf("Operator: %c\n", ch);
+    } else {
+        ungetc(ch, file);
+    }
+}
+
+// Main lexical analyzer function
+void lexicalAnalyzer(FILE *file) {
+    int ch;
+    while ((ch = fgetc(file)) != EOF) {
+        skipWhitespaceAndComments(file);
+
+        if (isalpha(ch) || ch == '_') {
+            ungetc(ch, file);
+            processIdentifier(file);
+        } else if (isdigit(ch)) {
+            ungetc(ch, file);
+            processNumber(file);
+        } else if (isOperator(ch)) {
+            ungetc(ch, file);
+            processOperator(file);
+        }
+    }
+}
+
+// Main function to open a file and run the lexical analyzer
+int main() {
+    FILE *file = fopen("SampleC.txt", "r");
+    if (!file) {
+        perror("Could not open source file");
+        return 1;
+    }
+
+    lexicalAnalyzer(file);
+    fclose(file);
+
+    return 0;
+}
