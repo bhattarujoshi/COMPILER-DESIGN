@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_CODE_LINES 100
+#define MAX_EXPR_LENGTH 50
+#define MAX_VAR_LENGTH 10
+
+// Structure to hold a single three-address code instruction
+typedef struct {
+    char result[MAX_VAR_LENGTH];
+    char op1[MAX_VAR_LENGTH];
+    char operator[MAX_VAR_LENGTH];
+    char op2[MAX_VAR_LENGTH];
+} TAC;
+
+// Structure to store optimized code
+TAC optimizedCode[MAX_CODE_LINES];
+int optimizedCodeIndex = 0;
+
+int isDuplicate(TAC code[], int n, char *op1, char *operator, char *op2) {
+    for (int i = 0; i < n; i++) {
+        if (strcmp(code[i].op1, op1) == 0 &&
+            strcmp(code[i].operator, operator) == 0 &&
+            strcmp(code[i].op2, op2) == 0) {
+            return i; // Found duplicate at index i
+        }
+    }
+    return -1; // No duplicate found
+}
+
+// Add an instruction to the optimized code list
+void addOptimizedCode(char *result, char *op1, char *operator, char *op2) {
+    strcpy(optimizedCode[optimizedCodeIndex].result, result);
+    strcpy(optimizedCode[optimizedCodeIndex].op1, op1);
+    strcpy(optimizedCode[optimizedCodeIndex].operator, operator);
+    strcpy(optimizedCode[optimizedCodeIndex].op2, op2);
+    optimizedCodeIndex++;
+}
+
+void displayCode(TAC code[], int n) {
+    printf("\nCode:\n");
+    for (int i = 0; i < n; i++) {
+        printf("%s = %s %s %s\n", code[i].result, code[i].op1, code[i].operator, code[i].op2);
+    }
+}
+
+int main() {
+    int n;
+    TAC code[MAX_CODE_LINES];
+    
+    printf("Enter the number of three-address code lines: ");
+    scanf("%d", &n);
+    getchar(); // Clear the newline after number entry
+
+    // Input the three-address code
+    printf("Enter each line of code in the format: result = op1 operator op2\n");
+    for (int i = 0; i < n; i++) {
+        printf("Line %d: ", i + 1);
+        scanf("%s = %s %s %s", code[i].result, code[i].op1, code[i].operator, code[i].op2);
+    }
+
+    // Perform common subexpression elimination
+    for (int i = 0; i < n; i++) {
+        int duplicateIndex = isDuplicate(optimizedCode, optimizedCodeIndex, code[i].op1, code[i].operator, code[i].op2);
+        
+        if (duplicateIndex != -1) {
+            // Replace the result with the existing common subexpression
+            strcpy(code[i].result, optimizedCode[duplicateIndex].result);
+        } else {
+            // No duplicate found, add to optimized code
+            addOptimizedCode(code[i].result, code[i].op1, code[i].operator, code[i].op2);
+        }
+    }
+
+    // Display the optimized code
+    printf("\nOptimized Code after Common Subexpression Elimination:\n");
+    displayCode(optimizedCode, optimizedCodeIndex);
+
+    return 0;
+}
